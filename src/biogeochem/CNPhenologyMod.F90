@@ -1465,6 +1465,7 @@ contains
     integer h         ! hemisphere indices
     integer idpp      ! number of days past planting
     real(r8) :: dtrad ! radiation time step delta t (seconds)
+    real(r8) :: psic  ! water stress of top soil layer for crop planting
     real(r8) dayspyr  ! days per year
     real(r8) crmcorn  ! comparitive relative maturity for corn
     real(r8) ndays_on ! number of days to fertilize
@@ -1475,6 +1476,7 @@ contains
          
          leaf_long         =>    pftcon%leaf_long                              , & ! Input:  leaf longevity (yrs)                              
          leafcn            =>    pftcon%leafcn                                 , & ! Input:  leaf C:N (gC/gN)                                  
+         irrigated         =>    pftcon%irrigated                              , & ! Input:  crop irrigated 0:1  
          manunitro         =>    pftcon%manunitro                              , & ! Input:  max manure to be applied in total (kgN/m2)
          mxmat             =>    pftcon%mxmat                                  , & ! Input:  
          minplanttemp      =>    pftcon%minplanttemp                           , & ! Input:  
@@ -1491,6 +1493,8 @@ contains
          gdd020            =>    temperature_inst%gdd020_patch                 , & ! Input:  [real(r8) (:) ]  20 yr mean of gdd0                                
          gdd820            =>    temperature_inst%gdd820_patch                 , & ! Input:  [real(r8) (:) ]  20 yr mean of gdd8                                
          gdd1020           =>    temperature_inst%gdd1020_patch                , & ! Input:  [real(r8) (:) ]  20 yr mean of gdd10                               
+
+         soilpsi           =>    soilstate_inst%soilpsi_col                    , & ! Input:  [real(r8)  (:,:) ]  soil water potential in each soil layer (MPa)   
 
          fertnitro         =>    crop_inst%fertnitro_patch                     , & ! Input:  [real(r8) (:) ]  fertilizer nitrogen
          hui               =>    crop_inst%gddplant_patch                      , & ! Input:  [real(r8) (:) ]  gdd since planting (gddplant)                    
@@ -1551,6 +1555,13 @@ contains
          bgtr(p)  = 0._r8
          lgsf(p)  = 0._r8
 
+         ! get soil matric potential as a limit on planting for rainfed summer crops
+
+         psic = soilpsi(c,3)
+         if (irrigated(ivt(p)) == 1._r8 .and. psic < soilpsi_on) then
+            psic = soilpsi_on
+         end if 
+	 
          ! ---------------------------------
          ! from AgroIBIS subroutine planting
          ! ---------------------------------
@@ -1620,11 +1631,14 @@ contains
                !         cropplant through the end of the year for a harvested crop.
                !         Also harvdate(p) should be harvdate(p,ivt(p)) and should be
                !         updated on Jan 1st instead of at harvest (slevis)
+	       ! plawrence: Added soil moisture threshold so psic must be greater than 
+	       !            soilpsi_on for rainfed crops
                if (a5tmin(p)             /= spval                  .and. &
                     a5tmin(p)             <= minplanttemp(ivt(p))   .and. &
                     jday                  >= minplantjday(ivt(p),h) .and. &
                     (gdd020(p)            /= spval                  .and. &
-                    gdd020(p)             >= gddmin(ivt(p)))) then
+                    gdd020(p)             >= gddmin(ivt(p)))        .and. &
+                    psic                  >= soilpsi_on) then
 
                   cumvd(p)       = 0._r8
                   hdidx(p)       = 0._r8
@@ -1658,12 +1672,14 @@ contains
                      endif
                   endif
 
-                  ! latest possible date to plant winter cereal and after all other 
-                  ! crops were harvested for that year
-
+               ! latest possible date to plant winter cereal and after all other 
+               ! crops were harvested for that year
+	       ! plawrence: Added soil moisture threshold so psic must be greater than 
+	       !            soilpsi_on for rainfed crops
                else if (jday       >=  maxplantjday(ivt(p),h) .and. &
                     gdd020(p)  /= spval                   .and. &
-                    gdd020(p)  >= gddmin(ivt(p))) then
+                    gdd020(p)  >= gddmin(ivt(p))          .and. &
+                    psic >= soilpsi_on) then
 
                   cumvd(p)       = 0._r8
                   hdidx(p)       = 0._r8
@@ -1703,6 +1719,8 @@ contains
             else ! not winter cereal... slevis: added distinction between NH and SH
                ! slevis: The idea is that jday will equal idop sooner or later in the year
                !         while the gdd part is either true or false for the year.
+	       ! plawrence: Added soil moisture threshold so psic must be greater than 
+	       !            soilpsi_on for rainfed crops
                if (t10(p) /= spval.and. a10tmin(p) /= spval   .and. &
                     t10(p)     > planttemp(ivt(p))             .and. &
                     a10tmin(p) > minplanttemp(ivt(p))          .and. &
@@ -1710,7 +1728,8 @@ contains
                     jday       <= maxplantjday(ivt(p),h)       .and. &
                     t10(p) /= spval .and. a10tmin(p) /= spval  .and. &
                     gdd820(p) /= spval                         .and. &
-                    gdd820(p) >= gddmin(ivt(p))) then
+                    gdd820(p) >= gddmin(ivt(p))                .and. &
+                    psic >= soilpsi_on) then
 
                   ! impose limit on growing season length needed
                   ! for crop maturity - for cold weather constraints
@@ -1762,9 +1781,13 @@ contains
                   endif
 
 
-                  ! If hit the max planting julian day -- go ahead and plant
-               else if (jday == maxplantjday(ivt(p),h) .and. gdd820(p) > 0._r8 .and. &
-                    gdd820(p) /= spval ) then
+               ! If hit the max planting julian day -- go ahead and plant
+	       ! plawrence: Added soil moisture threshold so psic must be greater than 
+	       !            soilpsi_on for rainfed crops
+               else if (jday >= maxplantjday(ivt(p),h) .and. &
+                     gdd820(p) > 0._r8                 .and. &
+                     gdd820(p) /= spval                .and. &
+                     psic >= soilpsi_on) then
                   croplive(p)  = .true.
                   cropplant(p) = .true.
                   idop(p)      = jday
