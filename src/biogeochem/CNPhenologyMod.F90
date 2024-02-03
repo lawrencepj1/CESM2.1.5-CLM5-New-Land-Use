@@ -1631,8 +1631,8 @@ contains
                !         cropplant through the end of the year for a harvested crop.
                !         Also harvdate(p) should be harvdate(p,ivt(p)) and should be
                !         updated on Jan 1st instead of at harvest (slevis)
-	       ! plawrence: Added soil moisture threshold so psic must be greater than 
-	       !            soilpsi_on for rainfed crops
+               ! plawrence: Added soil moisture threshold so psic must be greater than 
+               !            soilpsi_on for rainfed crops
                if (a5tmin(p)             /= spval                  .and. &
                     a5tmin(p)             <= minplanttemp(ivt(p))   .and. &
                     jday                  >= minplantjday(ivt(p),h) .and. &
@@ -1674,8 +1674,8 @@ contains
 
                ! latest possible date to plant winter cereal and after all other 
                ! crops were harvested for that year
-	       ! plawrence: Added soil moisture threshold so psic must be greater than 
-	       !            soilpsi_on for rainfed crops
+               ! plawrence: Added soil moisture threshold so psic must be greater than 
+               !            soilpsi_on for rainfed crops
                else if (jday       >=  maxplantjday(ivt(p),h) .and. &
                     gdd020(p)  /= spval                   .and. &
                     gdd020(p)  >= gddmin(ivt(p))          .and. &
@@ -1719,8 +1719,8 @@ contains
             else ! not winter cereal... slevis: added distinction between NH and SH
                ! slevis: The idea is that jday will equal idop sooner or later in the year
                !         while the gdd part is either true or false for the year.
-	       ! plawrence: Added soil moisture threshold so psic must be greater than 
-	       !            soilpsi_on for rainfed crops
+               ! plawrence: Added soil moisture threshold so psic must be greater than 
+               !            soilpsi_on for rainfed crops
                if (t10(p) /= spval.and. a10tmin(p) /= spval   .and. &
                     t10(p)     > planttemp(ivt(p))             .and. &
                     a10tmin(p) > minplanttemp(ivt(p))          .and. &
@@ -1782,8 +1782,8 @@ contains
 
 
                ! If hit the max planting julian day -- go ahead and plant
-	       ! plawrence: Added soil moisture threshold so psic must be greater than 
-	       !            soilpsi_on for rainfed crops
+               ! plawrence: Added soil moisture threshold so psic must be greater than 
+               !            soilpsi_on for rainfed crops
                else if (jday >= maxplantjday(ivt(p),h) .and. &
                      gdd820(p) > 0._r8                 .and. &
                      gdd820(p) /= spval                .and. &
