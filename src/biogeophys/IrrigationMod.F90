@@ -973,7 +973,9 @@ contains
             this%params%irrig_threshold_fraction * &
             (h2osoi_liq_target_tot(c) - h2osoi_liq_wilting_point_tot(c))
        if (h2osoi_liq_tot(c) < h2osoi_liq_at_threshold) then
-          deficit(c) = h2osoi_liq_target_tot(c) - h2osoi_liq_tot(c)
+          deficit(c) = 2._r8 * (h2osoi_liq_target_tot(c) - h2osoi_liq_tot(c))
+          ! plawrence increased deficit by a factor of 2.0 to account for inefficiencies in
+          ! irrigation as outlined in Yao et al. 2022 JAMES.
           ! deficit shouldn't be less than 0: if it is, that implies that the
           ! irrigation target is less than the irrigation threshold, which is not
           ! supposed to happen
