@@ -305,7 +305,7 @@ contains
 
        if (doalb .and. num_pcropp > 0 ) then
           call CropPhenology(num_pcropp, filter_pcropp, &
-               waterstate_inst, temperature_inst, crop_inst, canopystate_inst, cnveg_state_inst, &
+               waterstate_inst, soilstate_inst, temperature_inst, crop_inst, canopystate_inst, cnveg_state_inst, &
                cnveg_carbonstate_inst, cnveg_nitrogenstate_inst, cnveg_carbonflux_inst, cnveg_nitrogenflux_inst, &
                c13_cnveg_carbonstate_inst, c14_cnveg_carbonstate_inst)
        end if
@@ -1418,7 +1418,7 @@ contains
 
   !-----------------------------------------------------------------------
   subroutine CropPhenology(num_pcropp, filter_pcropp                     , &
-       waterstate_inst, temperature_inst, crop_inst, canopystate_inst, cnveg_state_inst , &
+       waterstate_inst, soilstate_inst, temperature_inst, crop_inst, canopystate_inst, cnveg_state_inst , &
        cnveg_carbonstate_inst, cnveg_nitrogenstate_inst, cnveg_carbonflux_inst, cnveg_nitrogenflux_inst,&
        c13_cnveg_carbonstate_inst, c14_cnveg_carbonstate_inst)
 
@@ -1442,6 +1442,7 @@ contains
     integer                        , intent(in)    :: num_pcropp       ! number of prog crop patches in filter
     integer                        , intent(in)    :: filter_pcropp(:) ! filter for prognostic crop patches
     type(waterstate_type)          , intent(in)    :: waterstate_inst
+    type(soilstate_type)           , intent(in)    :: soilstate_inst
     type(temperature_type)         , intent(in)    :: temperature_inst
     type(crop_type)                , intent(inout) :: crop_inst
     type(canopystate_type)         , intent(in)    :: canopystate_inst
@@ -1555,7 +1556,7 @@ contains
          bgtr(p)  = 0._r8
          lgsf(p)  = 0._r8
 
-         ! get soil matric potential as a limit on planting for rainfed summer crops
+         ! get soil matric potential as a limit on planting for rainfed crops
 
          psic = soilpsi(c,3)
          if (irrigated(ivt(p)) == 1._r8 .and. psic < soilpsi_on) then
