@@ -8,7 +8,7 @@
 
 <sim_year_range>constant</sim_year_range>
 
-<irrigate use_crop=".true." phys="clm5_0" >.false.</irrigate>
+<irrigate use_crop=".true." phys="clm5_0" >.true.</irrigate>
 <irrigate use_crop=".true." phys="clm4_5" >.false.</irrigate>
 
 <stream_year_first_ndep phys="clm4_0" bgc="cn"   >1850</stream_year_first_ndep>

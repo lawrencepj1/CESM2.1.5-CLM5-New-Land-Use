@@ -134,6 +134,7 @@ contains
     integer :: begp, endp
     integer :: imech, icomp
     type(shr_fire_emis_comp_t), pointer :: emis_cmp
+    character(len=16) :: units
 
     if (shr_fire_emis_mechcomps_n>0) then
 
@@ -143,8 +144,13 @@ contains
        emis_cmp_loop: do while(associated(emis_cmp))
 
           icomp = emis_cmp%index
+          if (emis_cmp%name(1:4) == 'num_') then
+             units = 'molecules/m2/sec'
+          else
+             units = 'kg/m2/sec'
+          endif
 
-          call hist_addfld1d (fname='FireComp_'//trim(emis_cmp%name), units='kg/m2/sec', &
+          call hist_addfld1d (fname='FireComp_'//trim(emis_cmp%name), units=units, &
                avgflag='A', long_name='fire emissions flux of '//trim(emis_cmp%name), &
                ptr_patch=this%comp(icomp)%emis, default='inactive')
 
@@ -154,8 +160,13 @@ contains
 
        ! loop over atm chem mechanism species
        do imech = 1,shr_fire_emis_mechcomps_n
+          if (shr_fire_emis_mechcomps(imech)%name(1:4) == 'num_') then
+             units = 'molecules/m2/sec'
+          else
+             units = 'kg/m2/sec'
+          endif
 
-          call hist_addfld1d (fname='FireMech_'//trim(shr_fire_emis_mechcomps(imech)%name), units='kg/m2/sec', &
+          call hist_addfld1d (fname='FireMech_'//trim(shr_fire_emis_mechcomps(imech)%name), units=units, &
                avgflag='A', long_name='fire emissions flux of '//trim(shr_fire_emis_mechcomps(imech)%name), &
                ptr_patch=this%mech(imech)%emis, default='inactive')
 
@@ -279,7 +290,7 @@ contains
                epsilon = emis_cmp%emis_factors(patch%itype(p))
 
                comp(icomp)%emis(p) = epsilon * fire_flux* 1.e-3_r8/0.5_r8  ! (to convert gC/m2/sec to kg species/m2/sec)
-               emis_flux(icomp) = emis_cmp%coeff*comp(icomp)%emis(p)
+               emis_flux(icomp) = comp(icomp)%emis(p)
 
                emis_cmp => emis_cmp%next_emiscomp
 
@@ -290,7 +301,7 @@ contains
                n_emis_comps = shr_fire_emis_mechcomps(imech)%n_emis_comps
                do icomp = 1,n_emis_comps ! loop over number of emission components that make up the nth mechanism compoud
                   ii = shr_fire_emis_mechcomps(imech)%emis_comps(icomp)%ptr%index
-                  fire_emis(p,imech) = fire_emis(p,imech) + emis_flux(ii)
+                  fire_emis(p,imech) = fire_emis(p,imech) + shr_fire_emis_mechcomps(imech)%emis_comps(icomp)%ptr%coeff*emis_flux(ii)
                   mech(imech)%emis(p) = fire_emis(p,imech)
                enddo
             enddo
