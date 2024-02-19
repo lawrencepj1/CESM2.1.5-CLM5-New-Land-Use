@@ -3538,7 +3538,6 @@ sub setup_logic_megan {
                    "   Use the '-no-megan' option when '-bgc fates' is activated");
     }
     add_default($opts,  $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'megan_specifier');
-    check_megan_spec( $opts, $nl, $definition );
     add_default($opts,  $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'megan_factors_file');
   } else {
     if ( defined($nl->get_value('megan_specifier')) ||
