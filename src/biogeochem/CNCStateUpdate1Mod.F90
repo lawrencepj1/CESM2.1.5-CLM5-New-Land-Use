@@ -292,6 +292,8 @@ contains
               cs_veg%cropseedc_deficit_patch(p) = cs_veg%cropseedc_deficit_patch(p) &
                    - cf_veg%crop_seedc_to_leaf_patch(p) * dt &
                    + cf_veg%grainc_to_seed_patch(p) * dt
+              cs_veg%leafc_patch(p)      = cs_veg%leafc_patch(p)      - cf_veg%leafc_to_biofuel_patch(p)*dt
+              cs_veg%livestemc_patch(p)  = cs_veg%livestemc_patch(p)  - cf_veg%livestemc_to_biofuel_patch(p)*dt
            end if
          
            check_cpool = cs_veg%cpool_patch(p)- cf_veg%psnsun_to_cpool_patch(p)*dt-cf_veg%psnshade_to_cpool_patch(p)*dt

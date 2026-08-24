@@ -135,6 +135,9 @@ module CNVegCarbonFluxType
      real(r8), pointer :: livestemc_to_litter_patch                 (:)     ! live stem C litterfall (gC/m2/s)
      real(r8), pointer :: grainc_to_food_patch                      (:)     ! grain C to food for prognostic crop(gC/m2/s)
      real(r8), pointer :: grainc_to_seed_patch                      (:)     ! grain C to seed for prognostic crop(gC/m2/s)
+     real(r8), pointer :: leafc_to_biofuel_patch                    (:)     ! leaf C to biofuel for prognostic crop(gC/m2/s)
+     real(r8), pointer :: livestemc_to_biofuel_patch                (:)     ! live stem C to biofuel for prognostic crop(gC/m2/s)
+     real(r8), pointer :: biomassc_to_biofuel_patch                 (:)     ! biomass C to seed for prognostic crop(gC/m2/s)
 
      ! maintenance respiration fluxes     
      real(r8), pointer :: cpool_to_resp_patch                       (:)     ! CNflex excess C maintenance respiration (gC/m2/s)
@@ -247,6 +250,8 @@ module CNVegCarbonFluxType
      real(r8), pointer :: harvest_c_to_cwdc_col                     (:,:)   ! C fluxes associated with harvest to CWD pool (gC/m3/s)
      real(r8), pointer :: grainc_to_cropprodc_patch                 (:)     ! grain C to crop product pool (gC/m2/s)
      real(r8), pointer :: grainc_to_cropprodc_col                   (:)     ! grain C to crop product pool (gC/m2/s)
+     real(r8), pointer :: biomassc_to_biofuelprodc_patch            (:)     ! biomass C to biofuel product pool (gC/m2/s)
+     real(r8), pointer :: biomassc_to_biofuelprodc_col              (:)     ! biomass C to biofuel product pool (gC/m2/s)
 
      ! fire fluxes
      real(r8), pointer :: m_decomp_cpools_to_fire_vr_col            (:,:,:) ! vertically-resolved decomposing C fire loss (gC/m3/s)
@@ -265,6 +270,7 @@ module CNVegCarbonFluxType
      real(r8), pointer :: dwt_conv_cflux_dribbled_grc               (:)     ! (gC/m2/s) dwt_conv_cflux_grc dribbled evenly throughout the year
      real(r8), pointer :: dwt_wood_productc_gain_patch              (:)     ! (gC/m2/s) addition to wood product pools from landcover change; although this is a patch-level flux, it is expressed per unit GRIDCELL area
      real(r8), pointer :: dwt_crop_productc_gain_patch              (:)     ! (gC/m2/s) addition to crop product pools from landcover change; although this is a patch-level flux, it is expressed per unit GRIDCELL area
+     real(r8), pointer :: dwt_biofuel_productc_gain_patch           (:)     ! (gC/m2/s) addition to biofuel product pools from landcover change; although this is a patch-level flux, it is expressed per unit GRIDCELL area
      real(r8), pointer :: dwt_slash_cflux_col                       (:)     ! (gC/m2/s) conversion slash flux due to landcover change
      real(r8), pointer :: dwt_frootc_to_litr_met_c_col              (:,:)   ! (gC/m3/s) fine root to litter due to landcover change
      real(r8), pointer :: dwt_frootc_to_litr_cel_c_col              (:,:)   ! (gC/m3/s) fine root to litter due to landcover change
@@ -601,6 +607,9 @@ contains
     allocate(this%livestemc_to_litter_patch                 (begp:endp)) ; this%livestemc_to_litter_patch                 (:) = nan
     allocate(this%grainc_to_food_patch                      (begp:endp)) ; this%grainc_to_food_patch                      (:) = nan
     allocate(this%grainc_to_seed_patch                      (begp:endp)) ; this%grainc_to_seed_patch                      (:) = nan
+    allocate(this%leafc_to_biofuel_patch                    (begp:endp)) ; this%leafc_to_biofuel_patch                    (:) = nan
+    allocate(this%livestemc_to_biofuel_patch                (begp:endp)) ; this%livestemc_to_biofuel_patch                (:) = nan
+    allocate(this%biomassc_to_biofuel_patch                 (begp:endp)) ; this%biomassc_to_biofuel_patch                 (:) = nan
     allocate(this%grainc_xfer_to_grainc_patch               (begp:endp)) ; this%grainc_xfer_to_grainc_patch               (:) = nan
     allocate(this%cpool_grain_gr_patch                      (begp:endp)) ; this%cpool_grain_gr_patch                      (:) = nan
     allocate(this%cpool_grain_storage_gr_patch              (begp:endp)) ; this%cpool_grain_storage_gr_patch              (:) = nan
@@ -652,6 +661,7 @@ contains
     allocate(this%dwt_conv_cflux_dribbled_grc       (begg:endg))                  ; this%dwt_conv_cflux_dribbled_grc(:)  =nan
     allocate(this%dwt_wood_productc_gain_patch      (begp:endp))                  ; this%dwt_wood_productc_gain_patch(:)  =nan
     allocate(this%dwt_crop_productc_gain_patch      (begp:endp))                  ; this%dwt_crop_productc_gain_patch(:) =nan
+    allocate(this%dwt_biofuel_productc_gain_patch   (begp:endp))                  ; this%dwt_biofuel_productc_gain_patch(:) =nan
 
     allocate(this%crop_seedc_to_leaf_patch          (begp:endp))                  ; this%crop_seedc_to_leaf_patch  (:)  =nan
 
@@ -664,6 +674,12 @@ contains
 
     allocate(this%grainc_to_cropprodc_col(begc:endc))
     this%grainc_to_cropprodc_col(:) = nan
+
+    allocate(this%biomassc_to_biofuelprodc_patch(begp:endp))
+    this%biomassc_to_biofuelprodc_patch(:) = nan
+
+    allocate(this%biomassc_to_biofuelprodc_col(begc:endc))
+    this%biomassc_to_biofuelprodc_col(:) = nan
 
     allocate(this%m_decomp_cpools_to_fire_vr_col(begc:endc,1:nlevdecomp_full,1:ndecomp_pools))                
     this%m_decomp_cpools_to_fire_vr_col(:,:,:)= nan
@@ -834,6 +850,21 @@ contains
           call hist_addfld1d (fname='GRAINC_TO_SEED', units='gC/m^2/s', &
                avgflag='A', long_name='grain C to seed', &
                ptr_patch=this%grainc_to_seed_patch)
+
+          this%leafc_to_biofuel_patch(begp:endp) = spval
+          call hist_addfld1d (fname='LEAFC_TO_BIOFUEL', units='gC/m^2/s', &
+               avgflag='A', long_name='leaf C to biofuel', &
+               ptr_patch=this%leafc_to_biofuel_patch)
+
+          this%livestemc_to_biofuel_patch(begp:endp) = spval
+          call hist_addfld1d (fname='LIVESTEMC_TO_BIOFUEL', units='gC/m^2/s', &
+               avgflag='A', long_name='live stem C to biofuel', &
+               ptr_patch=this%livestemc_to_biofuel_patch)
+
+          this%biomassc_to_biofuel_patch(begp:endp) = spval
+          call hist_addfld1d (fname='BIOMASSC_TO_BIOFUEL', units='gC/m^2/s', &
+               avgflag='A', long_name='biomass C to biofuel', &
+               ptr_patch=this%biomassc_to_biofuel_patch)
        end if
 
        this%litterc_loss_col(begc:endc) = spval
@@ -3491,6 +3522,21 @@ contains
             long_name='grain C to food', units='gC/m2/s', &
             interpinic_flag='interp', readvar=readvar, data=this%grainc_to_food_patch)
 
+       call restartvar(ncid=ncid, flag=flag,  varname='leafc_to_biofuel', xtype=ncd_double,  &
+            dim1name='pft', &
+            long_name='leaf C to biofuel', units='gC/m2/s', &
+            interpinic_flag='interp', readvar=readvar, data=this%leafc_to_biofuel_patch)
+
+       call restartvar(ncid=ncid, flag=flag,  varname='livestemc_to_biofuel', xtype=ncd_double,  &
+            dim1name='pft', &
+            long_name='live stem C to biofuel', units='gC/m2/s', &
+            interpinic_flag='interp', readvar=readvar, data=this%livestemc_to_biofuel_patch)
+
+       call restartvar(ncid=ncid, flag=flag,  varname='biomassc_to_biofuel', xtype=ncd_double,  &
+            dim1name='pft', &
+            long_name='biomass C to biofuel', units='gC/m2/s', &
+            interpinic_flag='interp', readvar=readvar, data=this%biomassc_to_biofuel_patch)
+
        call restartvar(ncid=ncid, flag=flag,  varname='cpool_to_grainc', xtype=ncd_double,  &
             dim1name='pft', &
             long_name='allocation to grain C', units='gC/m2/s', &
@@ -3819,6 +3865,7 @@ contains
 
        this%crop_seedc_to_leaf_patch(i)                  = value_patch
        this%grainc_to_cropprodc_patch(i)                 = value_patch
+       this%biomassc_to_biofuelprodc_patch(i)            = value_patch
     end do
 
     if ( use_crop )then
@@ -3828,6 +3875,9 @@ contains
           this%livestemc_to_litter_patch(i)     = value_patch
           this%grainc_to_food_patch(i)          = value_patch
           this%grainc_to_seed_patch(i)          = value_patch
+          this%leafc_to_biofuel_patch(i)        = value_patch
+          this%livestemc_to_biofuel_patch(i)    = value_patch
+          this%biomassc_to_biofuel_patch(i)     = value_patch
           this%grainc_xfer_to_grainc_patch(i)   = value_patch
           this%cpool_to_grainc_patch(i)         = value_patch
           this%cpool_to_grainc_storage_patch(i) = value_patch
@@ -3884,6 +3934,7 @@ contains
        i = filter_column(fi)
 
        this%grainc_to_cropprodc_col(i)       = value_column
+       this%biomassc_to_biofuelprodc_col(i)  = value_column
        this%cwdc_hr_col(i)                   = value_column
        this%cwdc_loss_col(i)                 = value_column
        this%litterc_loss_col(i)              = value_column

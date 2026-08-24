@@ -142,6 +142,7 @@ contains
          col_endcb               =>    this%endcb_col                                   , & ! Output: [real(r8) (:) ]  (gC/m2) carbon mass, end of time step 
          wood_harvestc           =>    cnveg_carbonflux_inst%wood_harvestc_col          , & ! Input:  [real(r8) (:) ]  (gC/m2/s) wood harvest (to product pools)
          grainc_to_cropprodc     =>    cnveg_carbonflux_inst%grainc_to_cropprodc_col    , & ! Input:  [real(r8) (:) ]  (gC/m2/s) grain C to 1-year crop product pool
+         biomassc_to_biofuelprodc =>   cnveg_carbonflux_inst%biomassc_to_biofuelprodc_col, & ! Input:  [real(r8) (:) ]  (gC/m2/s) biomass C to biofuel product pools
          gpp                     =>    cnveg_carbonflux_inst%gpp_col                    , & ! Input:  [real(r8) (:) ]  (gC/m2/s) gross primary production
          er                      =>    cnveg_carbonflux_inst%er_col                     , & ! Input:  [real(r8) (:) ]  (gC/m2/s) total ecosystem respiration, autotrophic + heterotrophic
          col_fire_closs          =>    cnveg_carbonflux_inst%fire_closs_col             , & ! Input:  [real(r8) (:) ]  (gC/m2/s) total column-level fire C loss
@@ -177,7 +178,8 @@ contains
          ! after the dwt term has already been taken out.)
          col_coutputs = col_coutputs + &
               wood_harvestc(c) + &
-              grainc_to_cropprodc(c)
+              grainc_to_cropprodc(c) + &
+              biomassc_to_biofuelprodc(c)
 
          ! subtract leaching flux
          col_coutputs = col_coutputs - som_c_leached(c)
@@ -215,6 +217,7 @@ contains
          write(iulog,*)'col_xsmrpool_to_atm      = ',col_xsmrpool_to_atm(c)*dt
          write(iulog,*)'wood_harvestc            = ',wood_harvestc(c)*dt
          write(iulog,*)'grainc_to_cropprodc      = ',grainc_to_cropprodc(c)*dt
+         write(iulog,*)'biomassc_to_biofuelprodc = ',biomassc_to_biofuelprodc(c)*dt
          write(iulog,*)'-1*som_c_leached         = ',som_c_leached(c)*dt
          call endrun(msg=errMsg(sourcefile, __LINE__))
       end if

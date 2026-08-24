@@ -415,6 +415,16 @@ contains
               num_soilp                                        , filter_soilp, 1._r8, 0, isotope)
 
          call CIsoFluxCalc(&
+              iso_cnveg_cf%leafc_to_biofuel_patch              , cnveg_cf%leafc_to_biofuel_patch, &
+              iso_cnveg_cs%leafc_patch                         , cnveg_cs%leafc_patch, &
+              num_soilp                                        , filter_soilp, 1._r8, 0, isotope)
+
+         call CIsoFluxCalc(&
+              iso_cnveg_cf%livestemc_to_biofuel_patch          , cnveg_cf%livestemc_to_biofuel_patch, &
+              iso_cnveg_cs%livestemc_patch                     , cnveg_cs%livestemc_patch, &
+              num_soilp                                        , filter_soilp, 1._r8, 0, isotope)
+
+         call CIsoFluxCalc(&
               iso_cnveg_cf%grain_curmr_patch                   , cnveg_cf%grain_curmr_patch, &
               iso_cnveg_cs%cpool_patch                         , cnveg_cs%cpool_patch, &
               num_soilp                                        , filter_soilp, 1._r8, 0, isotope)
@@ -466,6 +476,12 @@ contains
                iso_cnveg_cf%grain_mr_patch(p) = iso_cnveg_cf%grain_xsmr_patch(p) + iso_cnveg_cf%grain_curmr_patch(p)
             end do
          endif
+
+         do fp = 1,num_soilp
+            p = filter_soilp(fp)
+            iso_cnveg_cf%biomassc_to_biofuelprodc_patch(p) = iso_cnveg_cf%leafc_to_biofuel_patch(p) + iso_cnveg_cf%livestemc_to_biofuel_patch(p)
+         end do
+
       end if
 
       ! call routine to shift patch-level litterfall fluxes to column, for isotopes

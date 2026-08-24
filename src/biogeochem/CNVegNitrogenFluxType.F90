@@ -132,6 +132,9 @@ module CNVegNitrogenFluxType
      real(r8), pointer :: livestemn_to_litter_patch                 (:)     ! patch livestem N to litter (gN/m2/s)
      real(r8), pointer :: grainn_to_food_patch                      (:)     ! patch grain N to food for prognostic crop (gN/m2/s)
      real(r8), pointer :: grainn_to_seed_patch                      (:)     ! patch grain N to seed for prognostic crop (gN/m2/s)
+     real(r8), pointer :: leafn_to_biofuel_patch                    (:)     ! patch leaf N to biofuel for prognostic crop (gN/m2/s)
+     real(r8), pointer :: livestemn_to_biofuel_patch                (:)     ! patch live stem N to biofuel for prognostic crop (gN/m2/s)
+     real(r8), pointer :: biomassn_to_biofuel_patch                 (:)     ! patch biomass N to biofuel for prognostic crop (gN/m2/s)
      real(r8), pointer :: leafn_to_litter_patch                     (:)     ! patch leaf N litterfall (gN/m2/s)
      real(r8), pointer :: leafn_to_retransn_patch                   (:)     ! patch leaf N to retranslocated N pool (gN/m2/s)
      real(r8), pointer :: frootn_to_retransn_patch                  (:)     ! patch fine root N to retranslocated N pool (gN/m2/s)
@@ -198,6 +201,7 @@ module CNVegNitrogenFluxType
      real(r8), pointer :: dwt_conv_nflux_grc                        (:)     ! (gN/m2/s) dwt_conv_nflux_patch summed to the gridcell-level
      real(r8), pointer :: dwt_wood_productn_gain_patch              (:)     ! patch (gN/m2/s) addition to wood product pools from landcover change; even though this is a patch-level flux, it is expressed per unit GRIDCELL area
      real(r8), pointer :: dwt_crop_productn_gain_patch              (:)     ! patch (gN/m2/s) addition to crop product pool from landcover change; even though this is a patch-level flux, it is expressed per unit GRIDCELL area
+     real(r8), pointer :: dwt_biofuel_productn_gain_patch           (:)     ! patch (gN/m2/s) addition to biofuel product pool from landcover change; even though this is a patch-level flux, it is expressed per unit GRIDCELL area
      real(r8), pointer :: dwt_frootn_to_litr_met_n_col              (:,:)   ! col (gN/m3/s) fine root to litter due to landcover change
      real(r8), pointer :: dwt_frootn_to_litr_cel_n_col              (:,:)   ! col (gN/m3/s) fine root to litter due to landcover change
      real(r8), pointer :: dwt_frootn_to_litr_lig_n_col              (:,:)   ! col (gN/m3/s) fine root to litter due to landcover change
@@ -414,6 +418,9 @@ contains
     allocate(this%livestemn_to_litter_patch                 (begp:endp)) ; this%livestemn_to_litter_patch                 (:) = nan
     allocate(this%grainn_to_food_patch                      (begp:endp)) ; this%grainn_to_food_patch                      (:) = nan
     allocate(this%grainn_to_seed_patch                      (begp:endp)) ; this%grainn_to_seed_patch                      (:) = nan
+    allocate(this%leafn_to_biofuel_patch                    (begp:endp)) ; this%leafn_to_biofuel_patch                    (:) = nan
+    allocate(this%livestemn_to_biofuel_patch                (begp:endp)) ; this%livestemn_to_biofuel_patch                (:) = nan
+    allocate(this%biomassn_to_biofuel_patch                 (begp:endp)) ; this%biomassn_to_biofuel_patch                      (:) = nan
     allocate(this%grainn_xfer_to_grainn_patch               (begp:endp)) ; this%grainn_xfer_to_grainn_patch               (:) = nan
     allocate(this%grainn_storage_to_xfer_patch              (begp:endp)) ; this%grainn_storage_to_xfer_patch              (:) = nan
     allocate(this%fert_patch                                (begp:endp)) ; this%fert_patch                                (:) = nan
@@ -438,6 +445,7 @@ contains
     allocate(this%dwt_conv_nflux_grc           (begg:endg))                   ; this%dwt_conv_nflux_grc           (:)   = nan
     allocate(this%dwt_wood_productn_gain_patch (begp:endp))                   ; this%dwt_wood_productn_gain_patch (:)   = nan
     allocate(this%dwt_crop_productn_gain_patch (begp:endp))                   ; this%dwt_crop_productn_gain_patch (:)   = nan
+    allocate(this%dwt_biofuel_productn_gain_patch (begp:endp))                ; this%dwt_biofuel_productn_gain_patch (:)   = nan
     allocate(this%wood_harvestn_col            (begc:endc))                   ; this%wood_harvestn_col            (:)   = nan
 
     allocate(this%dwt_frootn_to_litr_met_n_col (begc:endc,1:nlevdecomp_full)) ; this%dwt_frootn_to_litr_met_n_col (:,:) = nan
@@ -1372,6 +1380,27 @@ contains
     end if
 
     if (use_crop) then
+       call restartvar(ncid=ncid, flag=flag,  varname='leafn_to_biofuel', xtype=ncd_double,  &
+            dim1name='pft', &
+            long_name='leaf N to biofuel', units='gN/m2/s', &
+            interpinic_flag='interp', readvar=readvar, data=this%leafn_to_biofuel_patch)
+    end if
+
+    if (use_crop) then
+       call restartvar(ncid=ncid, flag=flag,  varname='livestemn_to_biofuel', xtype=ncd_double,  &
+            dim1name='pft', &
+            long_name='live stem N to biofuel', units='gN/m2/s', &
+            interpinic_flag='interp', readvar=readvar, data=this%livestemn_to_biofuel_patch)
+    end if
+
+    if (use_crop) then
+       call restartvar(ncid=ncid, flag=flag,  varname='biomassn_to_biofuel', xtype=ncd_double,  &
+            dim1name='pft', &
+            long_name='biomass N to biofuel', units='gN/m2/s', &
+            interpinic_flag='interp', readvar=readvar, data=this%biomassn_to_biofuel_patch)
+    end if
+
+    if (use_crop) then
        call restartvar(ncid=ncid, flag=flag,  varname='npool_to_grainn', xtype=ncd_double,  &
             dim1name='pft', &
             long_name='allocation to grain N', units='gN/m2/s', &
@@ -1691,6 +1720,9 @@ contains
           this%livestemn_to_litter_patch(i)              = value_patch
           this%grainn_to_food_patch(i)                   = value_patch
           this%grainn_to_seed_patch(i)                   = value_patch
+          this%leafn_to_biofuel_patch(i)                 = value_patch
+          this%livestemn_to_biofuel_patch(i)             = value_patch
+          this%biomassn_to_biofuel_patch(i)              = value_patch
           this%grainn_xfer_to_grainn_patch(i)            = value_patch
           this%npool_to_grainn_patch(i)                  = value_patch
           this%npool_to_grainn_storage_patch(i)          = value_patch
