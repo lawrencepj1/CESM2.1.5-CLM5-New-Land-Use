@@ -2573,7 +2573,7 @@ contains
        num_soilp_with_inactive, filter_soilp_with_inactive, &
        patch_state_updater, &
        leafc_seed, deadstemc_seed, &
-       conv_cflux, wood_product_cflux, crop_product_cflux, biofuel_product_cflux, &
+       conv_cflux, wood_product_cflux, crop_product_cflux, &
        dwt_frootc_to_litter, &
        dwt_livecrootc_to_litter, &
        dwt_deadcrootc_to_litter, &
@@ -2597,7 +2597,6 @@ contains
     real(r8)                        , intent(inout) :: conv_cflux( bounds%begp: )  ! patch-level conversion C flux to atm (expressed per unit GRIDCELL area)
     real(r8)                        , intent(inout) :: wood_product_cflux( bounds%begp: ) ! patch-level product C flux (expressed per unit GRIDCELL area)
     real(r8)                        , intent(inout) :: crop_product_cflux( bounds%begp: ) ! patch-level crop product C flux (expressed per unit GRIDCELL area)
-    real(r8)                        , intent(inout) :: biofuel_product_cflux( bounds%begp: ) ! patch-level biofuel product C flux (expressed per unit GRIDCELL area)
     real(r8)                        , intent(inout) :: dwt_frootc_to_litter( bounds%begp: ) ! patch-level fine root C to litter (expressed per unit COLUMN area)
     real(r8)                        , intent(inout) :: dwt_livecrootc_to_litter( bounds%begp: ) ! patch-level live coarse root C to litter (expressed per unit COLUMN area)
     real(r8)                        , intent(inout) :: dwt_deadcrootc_to_litter( bounds%begp: ) ! patch-level live coarse root C to litter (expressed per unit COLUMN area)

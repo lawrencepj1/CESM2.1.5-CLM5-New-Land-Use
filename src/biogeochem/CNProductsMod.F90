@@ -563,7 +563,7 @@ contains
        dwt_wood_product_gain_patch, &
        wood_harvest_patch, &
        dwt_crop_product_gain_patch, &
-       grain_to_cropprod_patch,
+       grain_to_cropprod_patch, &
        biomass_to_biofuelprod_patch)
     !
     ! !DESCRIPTION:
@@ -879,7 +879,7 @@ contains
        this%biomass_to_biofuelprod1_patch(p)  = &
             biomass_to_biofuelprod_patch(p) * (1.0_r8 - pftcon%biofuel_beccsfrac(patch%itype(p)))
        this%biomass_to_biofuelbeccs_patch(p) = &
-            biomass_to_biofuelprod_patch(p) * pftcon%biofuel_beccsfrac(patch%itype(p)))
+            biomass_to_biofuelprod_patch(p) * pftcon%biofuel_beccsfrac(patch%itype(p))
     end do
 
     ! Average harvest fluxes from patch to gridcell
@@ -944,7 +944,7 @@ contains
             this%cropprod1_loss_grc(g) + &
             this%prod10_loss_grc(g) + &
             this%prod100_loss_grc(g) + &
-            this%biofuelprod1_loss_grc(g) +
+            this%biofuelprod1_loss_grc(g) + &
             this%biofuelbeccs_loss_grc(g)
 
        this%dwt_woodprod_gain_grc(g) = &

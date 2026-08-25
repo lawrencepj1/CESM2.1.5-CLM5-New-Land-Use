@@ -63,6 +63,8 @@ module CNVegNitrogenFluxType
      real(r8), pointer :: hrv_retransn_to_litter_patch              (:)     ! patch retranslocated N pool harvest mortality (gN/m2/s)
      real(r8), pointer :: grainn_to_cropprodn_patch                 (:)     ! patch grain N to crop product pool (gN/m2/s)
      real(r8), pointer :: grainn_to_cropprodn_col                   (:)     ! col grain N to crop product pool (gN/m2/s)
+     real(r8), pointer :: biomassn_to_biofuelprodn_patch            (:)     ! patch biomass N to biofuel product pool (gN/m2/s)
+     real(r8), pointer :: biomassn_to_biofuelprodn_col              (:)     ! col biomass N to biofuel product pool (gN/m2/s)
      real(r8), pointer :: m_n_to_litr_met_fire_col                  (:,:)   ! col N from leaf, froot, xfer and storage N to litter labile N by fire (gN/m3/s)
      real(r8), pointer :: m_n_to_litr_cel_fire_col                  (:,:)   ! col N from leaf, froot, xfer and storage N to litter cellulose N by fire (gN/m3/s) 
      real(r8), pointer :: m_n_to_litr_lig_fire_col                  (:,:)   ! col N from leaf, froot, xfer and storage N to litter lignin N by fire (gN/m3/s) 
@@ -428,6 +430,9 @@ contains
 
     allocate(this%grainn_to_cropprodn_patch                 (begp:endp)) ; this%grainn_to_cropprodn_patch                 (:) = nan
     allocate(this%grainn_to_cropprodn_col                   (begc:endc)) ; this%grainn_to_cropprodn_col                   (:) = nan
+
+    allocate(this%biomassn_to_biofuelprodn_patch            (begp:endp)) ; this%biomassn_to_biofuelprodn_patch            (:) = nan
+    allocate(this%biomassn_to_biofuelprodn_col              (begc:endc)) ; this%biomassn_to_biofuelprodn_col              (:) = nan
 
     allocate(this%fire_nloss_col                            (begc:endc)) ; this%fire_nloss_col                            (:) = nan
     allocate(this%fire_nloss_p2c_col                        (begc:endc)) ; this%fire_nloss_p2c_col                        (:) = nan
@@ -1710,6 +1715,7 @@ contains
 
        this%crop_seedn_to_leaf_patch(i)                  = value_patch
        this%grainn_to_cropprodn_patch(i)                 = value_patch
+       this%biomassn_to_biofuelprodn_patch(i)            = value_patch
     end do
 
     if ( use_crop )then
@@ -1763,6 +1769,7 @@ contains
        i = filter_column(fi)
 
        this%grainn_to_cropprodn_col(i)       = value_column
+       this%biomassn_to_biofuelprodn_col(i)  = value_column
        this%fire_nloss_col(i)                = value_column
 
        ! Zero p2c column fluxes
