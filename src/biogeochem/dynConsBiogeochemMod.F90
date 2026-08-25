@@ -103,11 +103,9 @@ contains
     real(r8), allocatable         :: conv_cflux(:)                 ! patch-level mass loss due to weight shift (expressed per unit GRIDCELL area)
     real(r8), allocatable         :: wood_product_cflux(:)         ! patch-level mass loss due to weight shift (expressed per unit GRIDCELL area)
     real(r8), allocatable         :: crop_product_cflux(:)         ! patch-level mass loss due to weight shift (expressed per unit GRIDCELL area)
-    real(r8), allocatable         :: biofuel_product_cflux(:)      ! patch-level mass loss due to weight shift (expressed per unit GRIDCELL area)
     real(r8), allocatable, target :: conv_nflux(:)                 ! patch-level mass loss due to weight shift (expressed per unit GRIDCELL area)
     real(r8), allocatable         :: wood_product_nflux(:)         ! patch-level mass loss due to weight shift (expressed per unit GRIDCELL area)
     real(r8), allocatable         :: crop_product_nflux(:)         ! patch-level mass loss due to weight shift (expressed per unit GRIDCELL area)
-    real(r8), allocatable         :: biofuel_product_nflux(:)      ! patch-level mass loss due to weight shift (expressed per unit GRIDCELL area)
     character(len=32)             :: subname='dyn_cbal'            ! subroutine name
     !! C13
     real(r8), allocatable         :: dwt_leafc13_seed(:)           ! patch-level mass gain due to seeding of new area
@@ -118,7 +116,6 @@ contains
     real(r8), allocatable, target :: conv_c13flux(:)               ! patch-level mass loss due to weight shift (expressed per unit GRIDCELL area)
     real(r8), allocatable         :: wood_product_c13flux(:)       ! patch-level mass loss due to weight shift (expressed per unit GRIDCELL area)
     real(r8), allocatable         :: crop_product_c13flux(:)       ! patch-level mass loss due to weight shift (expressed per unit GRIDCELL area)
-    real(r8), allocatable         :: biofuel_product_c13flux(:)    ! patch-level mass loss due to weight shift (expressed per unit GRIDCELL area)
     !! C14
     real(r8), allocatable         :: dwt_leafc14_seed(:)           ! patch-level mass gain due to seeding of new area
     real(r8), allocatable         :: dwt_deadstemc14_seed(:)       ! patch-level mass gain due to seeding of new area
@@ -128,7 +125,6 @@ contains
     real(r8), allocatable, target :: conv_c14flux(:)               ! patch-level mass loss due to weight shift (expressed per unit GRIDCELL area)
     real(r8), allocatable         :: wood_product_c14flux(:)       ! patch-level mass loss due to weight shift (expressed per unit GRIDCELL area)
     real(r8), allocatable         :: crop_product_c14flux(:)       ! patch-level mass loss due to weight shift (expressed per unit GRIDCELL area)
-    real(r8), allocatable         :: biofuel_product_c14flux(:)    ! patch-level mass loss due to weight shift (expressed per unit GRIDCELL area)
 
     logical  :: patch_initiating(bounds%begp:bounds%endp)
 
@@ -212,11 +208,6 @@ contains
           write(iulog,*)subname,' allocation error for crop_product_cflux'
           call endrun(msg=errMsg(sourcefile, __LINE__))
     end if
-    allocate(biofuel_product_cflux(begp:endp), stat=ier)
-    if (ier /= 0) then
-          write(iulog,*)subname,' allocation error for biofuel_product_cflux'
-          call endrun(msg=errMsg(sourcefile, __LINE__))
-    end if
     allocate(conv_nflux(begp:endp), stat=ier)
     if (ier /= 0) then
           write(iulog,*)subname,' allocation error for conv_nflux'
@@ -230,11 +221,6 @@ contains
     allocate(crop_product_nflux(begp:endp), stat=ier)
     if (ier /= 0) then
           write(iulog,*)subname,' allocation error for crop_product_nflux'
-          call endrun(msg=errMsg(sourcefile, __LINE__))
-    end if
-    allocate(biofuel_product_nflux(begp:endp), stat=ier)
-    if (ier /= 0) then
-          write(iulog,*)subname,' allocation error for biofuel_product_nflux'
           call endrun(msg=errMsg(sourcefile, __LINE__))
     end if
 
@@ -279,11 +265,6 @@ contains
           write(iulog,*)subname,' allocation error for crop_product_c13flux'
           call endrun(msg=errMsg(sourcefile, __LINE__))
        end if
-       allocate(biofuel_product_c13flux(begp:endp), stat=ier)
-       if (ier /= 0) then
-          write(iulog,*)subname,' allocation error for biofuel_product_c13flux'
-          call endrun(msg=errMsg(sourcefile, __LINE__))
-       end if
     endif
     if ( use_c14 ) then
        allocate(dwt_leafc14_seed(begp:endp), stat=ier)
@@ -326,11 +307,6 @@ contains
           write(iulog,*)subname,' allocation error for crop_product_c14flux'
           call endrun(msg=errMsg(sourcefile, __LINE__))
        end if
-       allocate(biofuel_product_c14flux(begp:endp), stat=ier)
-       if (ier /= 0) then
-          write(iulog,*)subname,' allocation error for biofuel_product_c14flux'
-          call endrun(msg=errMsg(sourcefile, __LINE__))
-       end if
     endif
     
     ! Get time step
@@ -355,11 +331,9 @@ contains
        conv_cflux(p) = 0._r8
        wood_product_cflux(p) = 0._r8
        crop_product_cflux(p) = 0._r8
-       biofuel_product_cflux(p) = 0._r8
        conv_nflux(p) = 0._r8
        wood_product_nflux(p) = 0._r8
        crop_product_nflux(p) = 0._r8
-       biofuel_product_nflux(p) = 0._r8
        
        if ( use_c13 ) then
           dwt_leafc13_seed(p) = 0._r8
@@ -370,7 +344,6 @@ contains
           conv_c13flux(p) = 0._r8
           wood_product_c13flux(p) = 0._r8
           crop_product_c13flux(p) = 0._r8
-          biofuel_product_c13flux(p) = 0._r8
        endif
        
        if ( use_c14 ) then
@@ -382,7 +355,6 @@ contains
           conv_c14flux(p) = 0._r8
           wood_product_c14flux(p) = 0._r8
           crop_product_c14flux(p) = 0._r8
-          biofuel_product_c14flux(p) = 0._r8
        endif
        
        l = patch%landunit(p)
@@ -476,7 +448,6 @@ contains
          conv_cflux = conv_cflux(begp:endp), &
          wood_product_cflux = wood_product_cflux(begp:endp), &
          crop_product_cflux = crop_product_cflux(begp:endp), &
-         biofuel_product_cflux = biofuel_product_cflux(begp:endp), &
          dwt_frootc_to_litter = dwt_frootc_to_litter(begp:endp), &
          dwt_livecrootc_to_litter = dwt_livecrootc_to_litter(begp:endp), &
          dwt_deadcrootc_to_litter = dwt_deadcrootc_to_litter(begp:endp), &
@@ -500,7 +471,6 @@ contains
             conv_cflux = conv_c13flux(begp:endp), &
             wood_product_cflux = wood_product_c13flux(begp:endp), &
             crop_product_cflux = crop_product_c13flux(begp:endp), &
-            biofuel_product_cflux = biofuel_product_c13flux(begp:endp), &
             dwt_frootc_to_litter = dwt_frootc13_to_litter(begp:endp), &
             dwt_livecrootc_to_litter = dwt_livecrootc13_to_litter(begp:endp), &
             dwt_deadcrootc_to_litter = dwt_deadcrootc13_to_litter(begp:endp), &
@@ -526,7 +496,6 @@ contains
             conv_cflux = conv_c14flux(begp:endp), &
             wood_product_cflux = wood_product_c14flux(begp:endp), &
             crop_product_cflux = crop_product_c14flux(begp:endp), &
-            biofuel_product_cflux = biofuel_product_c14flux(begp:endp), &
             dwt_frootc_to_litter = dwt_frootc14_to_litter(begp:endp), &
             dwt_livecrootc_to_litter = dwt_livecrootc14_to_litter(begp:endp), &
             dwt_deadcrootc_to_litter = dwt_deadcrootc14_to_litter(begp:endp), &
@@ -551,7 +520,6 @@ contains
          conv_nflux = conv_nflux(begp:endp), &
          wood_product_nflux = wood_product_nflux(begp:endp), &
          crop_product_nflux = crop_product_nflux(begp:endp), &
-         biofuel_product_nflux = biofuel_product_nflux(begp:endp), &
          dwt_frootn_to_litter = dwt_frootn_to_litter(begp:endp), &
          dwt_livecrootn_to_litter = dwt_livecrootn_to_litter(begp:endp), &
          dwt_deadcrootn_to_litter = dwt_deadcrootn_to_litter(begp:endp), &
