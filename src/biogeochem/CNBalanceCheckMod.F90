@@ -274,6 +274,7 @@ contains
          col_fire_nloss      => cnveg_nitrogenflux_inst%fire_nloss_col                   , & ! Input:  [real(r8) (:) ]  (gN/m2/s) total column-level fire N loss 
          wood_harvestn       => cnveg_nitrogenflux_inst%wood_harvestn_col                , & ! Input:  [real(r8) (:) ]  (gN/m2/s) wood harvest (to product pools)
          grainn_to_cropprodn => cnveg_nitrogenflux_inst%grainn_to_cropprodn_col          , & ! Input:  [real(r8) (:) ]  (gN/m2/s) grain N to 1-year crop product pool
+         biomassn_to_biofuelprodn => cnveg_nitrogenflux_inst%biomassn_to_biofuelprodn_col , & ! Input:  [real(r8) (:) ]  (gN/m2/s) biomass N to biofuel product pools
 
          totcoln             => cnveg_nitrogenstate_inst%totn_col                          & ! Input:  [real(r8) (:) ]  (gN/m2) total column nitrogen, incl veg 
          )
@@ -309,7 +310,8 @@ contains
          ! after the dwt term has already been taken out.)
          col_noutputs(c) = col_noutputs(c) + &
               wood_harvestn(c) + &
-              grainn_to_cropprodn(c)
+              grainn_to_cropprodn(c) + &
+              biomassn_to_biofuelprodn(c)
 
          if (.not. use_nitrif_denitrif) then
             col_noutputs(c) = col_noutputs(c) + sminn_leached(c)
