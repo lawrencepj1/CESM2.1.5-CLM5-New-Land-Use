@@ -2508,10 +2508,10 @@ contains
                   ! Cut a certain fraction (i.e., biofuel_harvfrac(ivt(p))) of leaf and live stem C and N
                   ! and move this as biomass C and N to biofuel, rather than move it to litter
                   leafc_to_biofuel(p) = t1 * leafc(p) * biofuel_harvfrac(ivt(p))
-                  livestemc_to_biofuel(p) = t1 * leafc(p) * biofuel_harvfrac(ivt(p))
+                  livestemc_to_biofuel(p) = t1 * livestemc(p) * biofuel_harvfrac(ivt(p))
                   biomassc_to_biofuel(p) = leafc_to_biofuel(p) + livestemc_to_biofuel(p)
                   leafn_to_biofuel(p) = t1 * leafn(p) * biofuel_harvfrac(ivt(p))
-                  livestemn_to_biofuel(p) = t1 * leafn(p) * biofuel_harvfrac(ivt(p))
+                  livestemn_to_biofuel(p) = t1 * livestemn(p) * biofuel_harvfrac(ivt(p))
                   biomassn_to_biofuel(p) = leafn_to_biofuel(p) + livestemn_to_biofuel(p)
 
                end if
