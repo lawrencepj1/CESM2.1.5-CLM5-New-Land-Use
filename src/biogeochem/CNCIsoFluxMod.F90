@@ -415,6 +415,11 @@ contains
               num_soilp                                        , filter_soilp, 1._r8, 0, isotope)
 
          call CIsoFluxCalc(&
+              iso_cnveg_cf%grainc_to_biofuel_patch             , cnveg_cf%grainc_to_biofuel_patch, &
+              iso_cnveg_cs%grainc_patch                        , cnveg_cs%grainc_patch, &
+              num_soilp                                        , filter_soilp, 1._r8, 0, isotope)
+
+         call CIsoFluxCalc(&
               iso_cnveg_cf%leafc_to_biofuel_patch              , cnveg_cf%leafc_to_biofuel_patch, &
               iso_cnveg_cs%leafc_patch                         , cnveg_cs%leafc_patch, &
               num_soilp                                        , filter_soilp, 1._r8, 0, isotope)
@@ -479,7 +484,9 @@ contains
 
          do fp = 1,num_soilp
             p = filter_soilp(fp)
-            iso_cnveg_cf%biomassc_to_biofuelprodc_patch(p) = iso_cnveg_cf%leafc_to_biofuel_patch(p) + iso_cnveg_cf%livestemc_to_biofuel_patch(p)
+            iso_cnveg_cf%biomassc_to_biofuelprodc_patch(p) = iso_cnveg_cf%grainc_to_biofuel_patch(p) + &
+                                                             iso_cnveg_cf%leafc_to_biofuel_patch(p) + &
+                                                             iso_cnveg_cf%livestemc_to_biofuel_patch(p)
          end do
 
       end if

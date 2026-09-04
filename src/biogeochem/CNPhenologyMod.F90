@@ -2456,6 +2456,7 @@ contains
          livestemc_to_litter   =>    cnveg_carbonflux_inst%livestemc_to_litter_patch   , & ! Output: [real(r8) (:) ]  live stem C litterfall (gC/m2/s)                  
          grainc_to_food        =>    cnveg_carbonflux_inst%grainc_to_food_patch        , & ! Output: [real(r8) (:) ]  grain C to food (gC/m2/s)                         
          grainc_to_seed        =>    cnveg_carbonflux_inst%grainc_to_seed_patch        , & ! Output: [real(r8) (:) ]  grain C to seed (gC/m2/s)
+         grainc_to_biofuel     =>    cnveg_carbonflux_inst%grainc_to_biofuel_patch     , & ! Output: [real(r8) (:) ]  grain C to biofuel (gC/m2/s)
          leafc_to_biofuel      =>    cnveg_carbonflux_inst%leafc_to_biofuel_patch      , & ! Output: [real(r8) (:) ]  leaf C to biofuel (gC/m2/s)
          livestemc_to_biofuel  =>    cnveg_carbonflux_inst%livestemc_to_biofuel_patch  , & ! Output: [real(r8) (:) ]  live stem C to biofuel (gC/m2/s)
          biomassc_to_biofuel   =>    cnveg_carbonflux_inst%biomassc_to_biofuel_patch   , & ! Output: [real(r8) (:) ]  biomass C to biofuel (gC/m2/s)
@@ -2465,6 +2466,7 @@ contains
          livestemn_to_litter   =>    cnveg_nitrogenflux_inst%livestemn_to_litter_patch , & ! Output: [real(r8) (:) ]  livestem N to litter (gN/m2/s)                    
          grainn_to_food        =>    cnveg_nitrogenflux_inst%grainn_to_food_patch      , & ! Output: [real(r8) (:) ]  grain N to food (gN/m2/s)                         
          grainn_to_seed        =>    cnveg_nitrogenflux_inst%grainn_to_seed_patch      , & ! Output: [real(r8) (:) ]  grain N to seed (gN/m2/s)
+         grainn_to_biofuel     =>    cnveg_nitrogenflux_inst%grainn_to_biofuel_patch   , & ! Output: [real(r8) (:) ]  grain N to biofuel (gN/m2/s)
          leafn_to_biofuel      =>    cnveg_nitrogenflux_inst%leafn_to_biofuel_patch    , & ! Output: [real(r8) (:) ]  leaf N to biofuel (gN/m2/s)
          livestemn_to_biofuel  =>    cnveg_nitrogenflux_inst%livestemn_to_biofuel_patch, & ! Output: [real(r8) (:) ]  live stem N to biofuel (gN/m2/s)
          biomassn_to_biofuel   =>    cnveg_nitrogenflux_inst%biomassn_to_biofuel_patch,  & ! Output: [real(r8) (:) ]  biomass N to biofuel (gN/m2/s)
@@ -2488,7 +2490,7 @@ contains
 
             if (offset_counter(p) == dt) then
                t1 = 1.0_r8 / dt
-               leafc_to_litter(p)  = t1 * leafc(p)*(1._r8-biofuel_harvfrac(ivt(p)))  + cpool_to_leafc(p)
+               leafc_to_litter(p)  = (t1 * leafc(p) + cpool_to_leafc(p)) * (1._r8-biofuel_harvfrac(ivt(p)))
                frootc_to_litter(p) = t1 * frootc(p) + cpool_to_frootc(p)
                ! this assumes that offset_counter == dt for crops
                ! if this were ever changed, we'd need to add code to the "else"
@@ -2499,20 +2501,22 @@ contains
                   ! replenish them.)
                   grainc_to_seed(p) = t1 * min(-cropseedc_deficit(p), grainc(p))
                   grainn_to_seed(p) = t1 * min(-cropseedn_deficit(p), grainn(p))
-                  ! Send the remaining grain to the food product pool
-                  grainc_to_food(p) = t1 * grainc(p)  + cpool_to_grainc(p) - grainc_to_seed(p)
-                  grainn_to_food(p) = t1 * grainn(p)  + npool_to_grainn(p) - grainn_to_seed(p)
+                  ! Send the remaining food grain to the food product pool
+                  grainc_to_food(p) = (t1 * grainc(p)  + cpool_to_grainc(p) - grainc_to_seed(p)) * (1._r8-biofuel_harvfrac(ivt(p)))
+                  grainn_to_food(p) = (t1 * grainn(p)  + npool_to_grainn(p) - grainn_to_seed(p)) * (1._r8-biofuel_harvfrac(ivt(p)))
 
-                  livestemc_to_litter(p) = t1 * livestemc(p)*(1._r8-biofuel_harvfrac(ivt(p))) + cpool_to_livestemc(p)
+                  livestemc_to_litter(p) = (t1 * livestemc(p) + cpool_to_livestemc(p)) * (1._r8-biofuel_harvfrac(ivt(p)))
 
-                  ! Cut a certain fraction (i.e., biofuel_harvfrac(ivt(p))) of leaf and live stem C and N
-                  ! and move this as biomass C and N to biofuel, rather than move it to litter
-                  leafc_to_biofuel(p) = t1 * leafc(p) * biofuel_harvfrac(ivt(p))
-                  livestemc_to_biofuel(p) = t1 * livestemc(p) * biofuel_harvfrac(ivt(p))
-                  biomassc_to_biofuel(p) = leafc_to_biofuel(p) + livestemc_to_biofuel(p)
+                  ! Cut a certain fraction (i.e., biofuel_harvfrac(ivt(p))) of grain leaf and live stem C and N
+                  ! and move this as biomass C and N to biofuel, rather than move it to litter and food
+                  grainc_to_biofuel(p) = (t1 * grainc(p)  + cpool_to_grainc(p) - grainc_to_seed(p)) * biofuel_harvfrac(ivt(p))
+                  leafc_to_biofuel(p) = (t1 * leafc(p) + cpool_to_leafc(p)) * biofuel_harvfrac(ivt(p))
+                  livestemc_to_biofuel(p) = (t1 * livestemc(p) + cpool_to_livestemc(p)) * biofuel_harvfrac(ivt(p))
+                  biomassc_to_biofuel(p) = grainc_to_biofuel(p) + leafc_to_biofuel(p) + livestemc_to_biofuel(p)
+                  grainn_to_biofuel(p) = (t1 * grainn(p)  + npool_to_grainn(p) - grainn_to_seed(p)) * biofuel_harvfrac(ivt(p))
                   leafn_to_biofuel(p) = t1 * leafn(p) * biofuel_harvfrac(ivt(p))
                   livestemn_to_biofuel(p) = t1 * livestemn(p) * biofuel_harvfrac(ivt(p))
-                  biomassn_to_biofuel(p) = leafn_to_biofuel(p) + livestemn_to_biofuel(p)
+                  biomassn_to_biofuel(p) = grainn_to_biofuel(p) + leafn_to_biofuel(p) + livestemn_to_biofuel(p)
 
                end if
             else

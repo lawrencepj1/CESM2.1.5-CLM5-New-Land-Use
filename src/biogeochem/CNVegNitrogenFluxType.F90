@@ -134,6 +134,7 @@ module CNVegNitrogenFluxType
      real(r8), pointer :: livestemn_to_litter_patch                 (:)     ! patch livestem N to litter (gN/m2/s)
      real(r8), pointer :: grainn_to_food_patch                      (:)     ! patch grain N to food for prognostic crop (gN/m2/s)
      real(r8), pointer :: grainn_to_seed_patch                      (:)     ! patch grain N to seed for prognostic crop (gN/m2/s)
+     real(r8), pointer :: grainn_to_biofuel_patch                   (:)     ! patch grain N to biofuel for prognostic crop (gN/m2/s)
      real(r8), pointer :: leafn_to_biofuel_patch                    (:)     ! patch leaf N to biofuel for prognostic crop (gN/m2/s)
      real(r8), pointer :: livestemn_to_biofuel_patch                (:)     ! patch live stem N to biofuel for prognostic crop (gN/m2/s)
      real(r8), pointer :: biomassn_to_biofuel_patch                 (:)     ! patch biomass N to biofuel for prognostic crop (gN/m2/s)
@@ -419,6 +420,7 @@ contains
     allocate(this%livestemn_to_litter_patch                 (begp:endp)) ; this%livestemn_to_litter_patch                 (:) = nan
     allocate(this%grainn_to_food_patch                      (begp:endp)) ; this%grainn_to_food_patch                      (:) = nan
     allocate(this%grainn_to_seed_patch                      (begp:endp)) ; this%grainn_to_seed_patch                      (:) = nan
+    allocate(this%grainn_to_biofuel_patch                   (begp:endp)) ; this%grainn_to_biofuel_patch                   (:) = nan
     allocate(this%leafn_to_biofuel_patch                    (begp:endp)) ; this%leafn_to_biofuel_patch                    (:) = nan
     allocate(this%livestemn_to_biofuel_patch                (begp:endp)) ; this%livestemn_to_biofuel_patch                (:) = nan
     allocate(this%biomassn_to_biofuel_patch                 (begp:endp)) ; this%biomassn_to_biofuel_patch                      (:) = nan
@@ -1383,6 +1385,13 @@ contains
     end if
 
     if (use_crop) then
+       call restartvar(ncid=ncid, flag=flag,  varname='grainn_to_biofuel', xtype=ncd_double,  &
+            dim1name='pft', &
+            long_name='grain N to biofuel', units='gN/m2/s', &
+            interpinic_flag='interp', readvar=readvar, data=this%grainn_to_biofuel_patch)
+    end if
+
+    if (use_crop) then
        call restartvar(ncid=ncid, flag=flag,  varname='leafn_to_biofuel', xtype=ncd_double,  &
             dim1name='pft', &
             long_name='leaf N to biofuel', units='gN/m2/s', &
@@ -1724,6 +1733,7 @@ contains
           this%livestemn_to_litter_patch(i)              = value_patch
           this%grainn_to_food_patch(i)                   = value_patch
           this%grainn_to_seed_patch(i)                   = value_patch
+          this%grainn_to_biofuel_patch(i)                = value_patch
           this%leafn_to_biofuel_patch(i)                 = value_patch
           this%livestemn_to_biofuel_patch(i)             = value_patch
           this%biomassn_to_biofuel_patch(i)              = value_patch
